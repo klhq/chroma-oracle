@@ -4,6 +4,16 @@ version = "2.1.0"
 description = "A colour sorting puzzle solver with mystery guessing capabilities"
 readme = "README.md"
 requires-python = ">=3.13"
+license = {text = "MIT"}
+authors = [{name = "Lance Hsu"}]
+keywords = ["puzzle", "solver", "color-sorting", "game", "bfs"]
+classifiers = [
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Games/Entertainment :: Puzzle Games",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: End Users/Desktop",
+]
 dependencies = [
     "click>=8.0.0",
     "sty>=1.0.0",
@@ -11,6 +21,8 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://chromaoracle.com"
+Repository = "https://github.com/lancehsu/chroma-oracle"
+Issues = "https://github.com/lancehsu/chroma-oracle/issues"
 
 
 [project.scripts]
