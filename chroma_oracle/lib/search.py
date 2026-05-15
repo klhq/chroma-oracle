@@ -25,7 +25,6 @@ class BfsNode:
     move: Move | None
     parent: BfsNode | None
     prev_move: Move | None = None
-    prev_prev_move: Move | None = None
 
 
 def reconstruct_path(node: BfsNode) -> tuple[Move, ...]:
@@ -54,20 +53,21 @@ def bfs(root: ContainerCollection) -> Option | None:
             return Option(next_coll, (move,))
         if next_coll not in visited:
             visited.add(next_coll)
-            queue.append(BfsNode(next_coll, move, root_node, move, None))
+            queue.append(BfsNode(next_coll, move, root_node, move))
 
     while len(queue) > 0:
         logging.debug("Options %d", len(queue))
         next_queue: list[BfsNode] = []
         for node in queue:
+            # Pre-compute the reverse of the move that led here. Any move
+            # at this node that matches it just undoes the last step and
+            # would land back at the parent state — already in `visited`.
+            # Filtering here skips the after() + visited round trip the
+            # visited check would otherwise pay for once per node.
+            undo = node.prev_move.reverse() if node.prev_move is not None else None
+
             for move in node.collection.get_moves():
-                # Detect trivial loops: A→B then B→A then A→B again
-                if (
-                    node.prev_move is not None
-                    and node.prev_prev_move is not None
-                    and node.prev_move == move.reverse()
-                    and node.prev_prev_move == move
-                ):
+                if undo is not None and move == undo:
                     continue
 
                 _next: ContainerCollection = node.collection.after(move)
@@ -86,7 +86,6 @@ def bfs(root: ContainerCollection) -> Option | None:
                     move,
                     node,
                     prev_move=move,
-                    prev_prev_move=node.prev_move,
                 )
 
                 # Check if a solution was found
