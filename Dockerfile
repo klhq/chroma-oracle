@@ -4,25 +4,23 @@ FROM python:3.13-slim-bookworm
 # Copy uv from the official image
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Ensure TLS certs exist for network access
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && \
-	rm -rf /var/lib/apt/lists/*
-
 # Set working directory
 WORKDIR /app
 
 # Copy dependency definitions
-COPY pyproject.toml uv.lock README.md ./
+COPY pyproject.toml uv.lock ./
 
-# Install dependencies using uv
-# Install dependencies from pyproject.toml first to leverage Docker caching
-RUN uv pip install --system --no-cache -r pyproject.toml
+# Install dependencies using uv (without project code for caching)
+RUN uv export --frozen --no-dev -o /tmp/requirements.txt && \
+    uv pip install --system --no-cache -r /tmp/requirements.txt && \
+    rm /tmp/requirements.txt
 
 # Copy project files
+COPY README.md ./
 COPY chroma_oracle ./chroma_oracle
 COPY levels ./levels
 
-# Install the project itself (no-deps because we already installed them)
+# Install the project itself
 RUN uv pip install --system --no-cache --no-deps .
 
 # Set the entrypoint to the application
