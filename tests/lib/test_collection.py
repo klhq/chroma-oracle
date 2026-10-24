@@ -196,3 +196,24 @@ class TestContainerCollection(TestCase):
             ]
         )
         self.assertNotEqual(coll, object())
+
+    def test_collection_hash_caching(self):
+        """Test hash caching and hash consistency."""
+        coll1 = ContainerCollection([["RED", "BLUE"], ["GREEN"], []])
+        coll2 = ContainerCollection([["GREEN"], ["RED", "BLUE"], []])
+        coll3 = ContainerCollection([["RED", "GREEN"], ["BLUE"], []])
+
+        self.assertIsNone(coll1._hash)
+        h1 = hash(coll1)
+        self.assertIsNotNone(coll1._hash)
+        self.assertEqual(hash(coll1), h1)
+
+        h2 = hash(coll2)
+        self.assertEqual(h1, h2)
+        self.assertEqual(coll1, coll2)
+
+        # Inherited from ContainerCollection copy
+        coll1_copy = ContainerCollection(coll1)
+        self.assertEqual(coll1_copy._hash, h1)
+        self.assertEqual(coll1_copy, coll1)
+        self.assertNotEqual(coll1, coll3)
