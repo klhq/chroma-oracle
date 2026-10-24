@@ -140,3 +140,26 @@ class TestCli(TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertFalse("-a, --algorithm" in result.stdout, "Global options removed")
         self.assertTrue("--help" in result.stdout, "Help text should be printed")
+
+    def test_strategy_too_many_candidates(self):
+        """Test strategy CLI command fails gracefully when candidate cap exceeded."""
+        import json
+        import tempfile
+
+        runner = CliRunner()
+        puzzle_grid = [
+            ["RED", "RED", "RED", "?"],
+            ["BLUE", "BLUE", "BLUE", "?"],
+            ["GREEN", "GREEN", "GREEN", "?"],
+            ["YELLOW", "YELLOW", "YELLOW", "?"],
+            ["ORANGE", "ORANGE", "ORANGE", "?"],
+            ["PURPLE", "PURPLE", "PURPLE", "?"],
+            [],
+        ]
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as f:
+            json.dump(puzzle_grid, f)
+            f.flush()
+            result = runner.invoke(cli, ["strategy", f.name])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("720 candidates", result.output)
+            self.assertIn("cap: 200", result.output)
