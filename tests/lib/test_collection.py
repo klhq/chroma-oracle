@@ -34,6 +34,19 @@ class TestContainerCollection(TestCase):
         )
         self.assertEqual(coll[1], Container([]), "Second container is empty")
 
+    def test_construct_with_tube_of_exactly_four(self):
+        """Construct collection with a tube of exactly 4 items."""
+        coll = ContainerCollection([["RED", "RED", "BLUE", "BLUE"], []])
+        self.assertEqual(len(coll[0]), 4)
+
+    def test_construct_with_oversized_tube_raises(self):
+        """Construct collection with an oversized tube raises ValueError."""
+        with self.assertRaises(ValueError) as cm:
+            ContainerCollection([["RED"], ["RED", "BLUE", "GREEN", "YELLOW", "ORANGE"]])
+        msg = str(cm.exception)
+        self.assertIn("Tube 1", msg)
+        self.assertIn("5", msg)
+
     def test_is_solved_single_empty(self):
         """An empty collection is always solved."""
         coll = ContainerCollection([[]])  # type: ignore[arg-type]

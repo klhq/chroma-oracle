@@ -11,6 +11,12 @@ def load(file: TextIO, *, reject_invalid: bool = False) -> ContainerCollection:
     """Load a json file into a `ContainerCollection`."""
     content: list[list[str]] = json.load(file)
 
+    for i, tube in enumerate(content):
+        if len(tube) > 4:
+            raise ValueError(
+                f"Tube {i} has {len(tube)} items, which exceeds the maximum capacity of 4"
+            )
+
     if reject_invalid:
         colours: dict[str, int] = {}
         for container_list in content:

@@ -114,6 +114,11 @@ def strategy(puzzle: str, interactive: bool, algorithm: str, verbose: bool):
     if verbose:
         logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
 
+    try:
+        start: ContainerCollection = file2collection.load(puzzle, reject_invalid=False)
+    except ValueError as err:
+        raise click.BadArgumentUsage("Invalid PUZZLE: " + str(err)) from err
+
     if interactive:
         from chroma_oracle.interactive_strategy import interactive_strategy_session
 
@@ -123,12 +128,8 @@ def strategy(puzzle: str, interactive: bool, algorithm: str, verbose: bool):
     # Non-interactive: compute guaranteed moves across all candidates,
     # then simulate them on the original raw puzzle and report the
     # raw-puzzle final/partial state (preserving UNKNOWNs).
-    try:
-        start: ContainerCollection = file2collection.load(puzzle, reject_invalid=False)
-        print("Initial state:")
-        print(start, "\n")
-    except ValueError as err:
-        raise click.BadArgumentUsage("Invalid PUZZLE: " + str(err)) from err
+    print("Initial state:")
+    print(start, "\n")
 
     if algorithm == "BFS":
         print("Searching using Breadth-First Search\n")
