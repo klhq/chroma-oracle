@@ -6,8 +6,10 @@ import tempfile
 
 from chroma_oracle.lib.unknown_solver import (
     calculate_needed_colors,
+    count_unique_permutations,
     generate_candidate_grids,
     load_puzzle_with_unknowns,
+    unique_permutations,
 )
 
 
@@ -62,3 +64,29 @@ def test_generate_candidate_grids():
                     assert item != "?"
     finally:
         os.unlink(temp_path)
+
+
+def test_count_unique_permutations():
+    """Test counting unique permutations of multisets."""
+    assert count_unique_permutations([]) == 1
+    assert count_unique_permutations(["RED"]) == 1
+    assert count_unique_permutations(["RED", "RED", "RED"]) == 1
+    assert count_unique_permutations(["RED", "BLUE", "GREEN"]) == 6
+    assert count_unique_permutations(["RED", "RED", "BLUE", "BLUE"]) == 6
+    assert count_unique_permutations(["A", "A", "B", "B", "C", "C"]) == 90
+
+
+def test_unique_permutations():
+    """Test generating deduplicated permutations with branch pruning."""
+    import itertools
+
+    assert unique_permutations([]) == [()]
+    assert unique_permutations(["RED"]) == [("RED",)]
+    assert unique_permutations(["RED", "RED", "RED"]) == [("RED", "RED", "RED")]
+
+    # Compare with itertools on a multiset
+    items = ["RED", "RED", "BLUE", "GREEN"]
+    expected = sorted(set(itertools.permutations(items)))
+    actual = unique_permutations(items)
+    assert actual == expected
+    assert len(actual) == count_unique_permutations(items)
