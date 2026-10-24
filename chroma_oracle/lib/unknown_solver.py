@@ -5,8 +5,7 @@ contain unknown/placeholder values that need to be determined through
 permutation testing.
 """
 
-import copy
-import itertools
+import collections
 import json
 
 from chroma_oracle.lib.collection import ContainerCollection
@@ -93,15 +92,59 @@ def calculate_needed_colors(data: UnknownPuzzleData) -> list[str] | None:
     return needed
 
 
+def count_unique_permutations(arr: list[str]) -> int:
+    """Count unique permutations of a multiset without enumerating them.
+
+    For a multiset of length n with item counts c1, c2, ..., ck,
+    the number of unique permutations is n! / (c1! * c2! * ... * ck!).
+    Computed incrementally in O(n) to keep intermediate values small.
+    """
+    if not arr:
+        return 1
+    counts = collections.Counter(arr)
+    result = 1
+    placed = 0
+    for c in counts.values():
+        for i in range(1, c + 1):
+            placed += 1
+            result = (result * placed) // i
+    return result
+
+
+def unique_permutations(arr: list[str]) -> list[tuple[str, ...]]:
+    """Generate all unique permutations of `arr` with branch deduplication.
+
+    Avoids the O(n!) explosion of set(itertools.permutations(arr)) by
+    only branching on distinct elements at each recursive step.
+    """
+    results: list[tuple[str, ...]] = []
+    sorted_arr = sorted(arr)
+
+    def permute(current: list[str], remaining: list[str]) -> None:
+        if not remaining:
+            results.append(tuple(current))
+            return
+
+        used: set[str] = set()
+        for i, val in enumerate(remaining):
+            if val in used:
+                continue
+            used.add(val)
+            permute(current + [val], remaining[:i] + remaining[i + 1 :])
+
+    permute([], sorted_arr)
+    return results
+
+
 def generate_candidate_grids(
     data: UnknownPuzzleData, needed: list[str]
 ) -> list[list[list[str]]]:
     """Generate all unique permutations of candidate grids."""
-    unique_perms = sorted(set(itertools.permutations(needed)))
+    unique_perms = unique_permutations(needed)
 
     candidate_grids = []
     for perm in unique_perms:
-        candidate_grid = copy.deepcopy(data.raw_grid)
+        candidate_grid = [row[:] for row in data.raw_grid]
         for idx, (r, c) in enumerate(data.unknown_indices):
             candidate_grid[r][c] = perm[idx]
         candidate_grids.append(candidate_grid)
