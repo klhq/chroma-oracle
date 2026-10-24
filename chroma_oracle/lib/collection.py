@@ -22,6 +22,7 @@ class ContainerCollection:
         self.__unique_set: set[tuple[Item, ...]] | None = None
         self.__possible_moves: list[Move] | None = None
         self._is_solved: bool | None = None
+        self._hash: int | None = None
 
         if isinstance(data, list):
             if data and isinstance(data[0], Container):
@@ -34,6 +35,8 @@ class ContainerCollection:
             # Since containers are now immutable, we can just share the tuple
             self.data = data.data
             self._is_solved = data._is_solved
+            self.__unique_set = data.__unique_set
+            self._hash = data._hash
         else:
             raise TypeError(
                 f"Invalid type ({data.__class__.__name__}) "
@@ -158,6 +161,12 @@ class ContainerCollection:
         be correct.
         """
         if isinstance(other, ContainerCollection):
+            if (
+                self._hash is not None
+                and other._hash is not None
+                and self._hash != other._hash
+            ):
+                return False
             return self._unique_set() == other._unique_set()
         if isinstance(other, list):
             return self._unique_set() == {container.data for container in other}
@@ -169,7 +178,9 @@ class ContainerCollection:
 
     def __hash__(self) -> int:
         """Get the hash of this collection."""
-        return hash(frozenset(self._unique_set()))
+        if self._hash is None:
+            self._hash = hash(frozenset(self._unique_set()))
+        return self._hash
 
     def __str__(self) -> str:
         """Printable representation of this collection."""
