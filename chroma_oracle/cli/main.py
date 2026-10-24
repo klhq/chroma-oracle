@@ -17,7 +17,10 @@ from chroma_oracle.lib import file2collection
 from chroma_oracle.lib.collection import ContainerCollection
 from chroma_oracle.lib.search import Option, bfs, dfs
 from chroma_oracle.lib.strategy import find_all_solutions, find_common_prefix
-from chroma_oracle.lib.unknown_solver import load_puzzle_with_unknowns
+from chroma_oracle.lib.unknown_solver import (
+    TooManyCandidatesError,
+    load_puzzle_with_unknowns,
+)
 
 
 @click.group(invoke_without_command=True)
@@ -133,7 +136,10 @@ def strategy(puzzle: str, interactive: bool, algorithm: str, verbose: bool):
         print("Searching using Depth-First Search\n")
 
     print(f"Analyzing {puzzle} for guaranteed safe moves...")
-    solutions = find_all_solutions(puzzle, algorithm)
+    try:
+        solutions = find_all_solutions(puzzle, algorithm)
+    except TooManyCandidatesError as err:
+        raise click.ClickException(str(err)) from err
 
     if not solutions:
         print("No solutions found.")

@@ -9,7 +9,10 @@ from chroma_oracle.lib.collection import ContainerCollection
 from chroma_oracle.lib.move import Move
 from chroma_oracle.lib.search import bfs, dfs
 from chroma_oracle.lib.unknown_solver import (
+    MAX_MYSTERY_CANDIDATES,
+    TooManyCandidatesError,
     calculate_needed_colors,
+    count_unique_permutations,
     generate_candidate_grids,
     load_puzzle_with_unknowns,
     solve_all_candidates,
@@ -38,6 +41,10 @@ def find_all_solutions(
     needed = calculate_needed_colors(data)
     if needed is None:
         return []
+
+    candidate_count = count_unique_permutations(needed)
+    if candidate_count > MAX_MYSTERY_CANDIDATES:
+        raise TooManyCandidatesError(candidate_count, MAX_MYSTERY_CANDIDATES)
 
     candidate_grids = generate_candidate_grids(data, needed)
     solutions = solve_all_candidates(candidate_grids, algorithm)

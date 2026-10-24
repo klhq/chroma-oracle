@@ -17,6 +17,7 @@ import sys
 from chroma_oracle.lib.collection import ContainerCollection
 from chroma_oracle.lib.move import Move
 from chroma_oracle.lib.strategy import find_all_solutions, find_common_prefix
+from chroma_oracle.lib.unknown_solver import TooManyCandidatesError
 
 
 def simulate_move(grid, move):
@@ -137,7 +138,11 @@ def interactive_strategy_session(puzzle_path: str, algorithm: str = "BFS"):
         with open(temp_file, "w", encoding="utf-8") as f:
             json.dump(current_grid, f)
 
-        solutions = find_all_solutions(temp_file, algorithm)
+        try:
+            solutions = find_all_solutions(temp_file, algorithm)
+        except TooManyCandidatesError as err:
+            print(f"\n❌ Error: {err}")
+            break
 
         if not solutions:
             print("❌ No solutions found from this state.")

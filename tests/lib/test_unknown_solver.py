@@ -4,7 +4,10 @@ import json
 import os
 import tempfile
 
+from chroma_oracle.lib.strategy import find_all_solutions
 from chroma_oracle.lib.unknown_solver import (
+    MAX_MYSTERY_CANDIDATES,
+    TooManyCandidatesError,
     calculate_needed_colors,
     count_unique_permutations,
     generate_candidate_grids,
@@ -90,3 +93,36 @@ def test_unique_permutations():
     actual = unique_permutations(items)
     assert actual == expected
     assert len(actual) == count_unique_permutations(items)
+
+
+def test_too_many_candidates_error():
+    """Test that candidate count exceeding cap raises TooManyCandidatesError."""
+    import pytest
+
+    err = TooManyCandidatesError(count=720, cap=MAX_MYSTERY_CANDIDATES)
+    assert err.count == 720
+    assert err.cap == 200
+    assert "720" in str(err)
+    assert "200" in str(err)
+
+    # 6 distinct missing colors = 6! = 720 permutations > 200 cap
+    puzzle_grid = [
+        ["RED", "RED", "RED", "?"],
+        ["BLUE", "BLUE", "BLUE", "?"],
+        ["GREEN", "GREEN", "GREEN", "?"],
+        ["YELLOW", "YELLOW", "YELLOW", "?"],
+        ["ORANGE", "ORANGE", "ORANGE", "?"],
+        ["PURPLE", "PURPLE", "PURPLE", "?"],
+        [],
+    ]
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(puzzle_grid, f)
+        temp_path = f.name
+
+    try:
+        with pytest.raises(TooManyCandidatesError) as exc_info:
+            find_all_solutions(temp_path)
+        assert exc_info.value.count == 720
+        assert exc_info.value.cap == 200
+    finally:
+        os.unlink(temp_path)

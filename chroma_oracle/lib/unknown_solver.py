@@ -13,6 +13,20 @@ from chroma_oracle.lib.colour import Colour
 from chroma_oracle.lib.move import Move
 from chroma_oracle.lib.search import bfs, dfs
 
+MAX_MYSTERY_CANDIDATES: int = 200
+
+
+class TooManyCandidatesError(ValueError):
+    """Raised when mystery candidate permutations exceed the configured cap."""
+
+    def __init__(self, count: int, cap: int = MAX_MYSTERY_CANDIDATES):
+        super().__init__(
+            f"Mystery puzzle would generate {count} candidates (cap: {cap}). "
+            "Input is too complex to solve."
+        )
+        self.count = count
+        self.cap = cap
+
 
 class UnknownPuzzleData:
     """Parsed data from a puzzle containing unknowns."""
