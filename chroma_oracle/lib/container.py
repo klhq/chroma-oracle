@@ -8,6 +8,8 @@ from typing import Any, cast
 
 from chroma_oracle.lib.item import Item
 
+TUBE_CAPACITY = 4
+
 
 class Container:
     """Represents a capacity limited container in the game."""
@@ -15,10 +17,8 @@ class Container:
     def __init__(
         self,
         initial_content: Sequence[Item] | Container | Sequence[str],
-        capacity: int | None = None,
     ):
-        """Create a container with `intial_content` and `capacity`."""
-        self._capacity = capacity or 4
+        """Create a container with `initial_content`."""
         # Ensure this is only ever set to the maximum size
         self.__data: tuple[Item, ...]
         self.__iter_val = 0  # Initialize iterator value
@@ -29,8 +29,7 @@ class Container:
         self._num_matching_head: int | None = None
 
         if isinstance(initial_content, Container):
-            self._capacity = capacity or initial_content.capacity
-            self.__data = initial_content.data[:capacity]
+            self.__data = initial_content.data
             # Inherit caches if any
             self._is_unique = initial_content._is_unique
             self._is_solved = initial_content._is_solved
@@ -38,14 +37,10 @@ class Container:
         else:
             type_map = set(map(type, iter(initial_content)))
             if type_map == {Item}:
-                initial_content = cast(
-                    Sequence[Item], initial_content[: self._capacity]
-                )
-                self.__data = tuple(initial_content)
+                self.__data = tuple(cast(Sequence[Item], initial_content))
             elif type_map == {str}:
-                initial_content = cast(Sequence[str], initial_content[: self._capacity])
                 self.__data = tuple(
-                    Item(value) for value in initial_content[: self._capacity]
+                    Item(value) for value in cast(Sequence[str], initial_content)
                 )
             elif type_map == set():
                 self.__data = ()
@@ -63,7 +58,7 @@ class Container:
     @property
     def capacity(self) -> int:
         """Get the capacity of this container."""
-        return self._capacity
+        return TUBE_CAPACITY
 
     @property
     def is_empty(self) -> bool:
@@ -79,7 +74,7 @@ class Container:
 
         Returns true if the container contains it's maximum number of items.
         """
-        return len(self.__data) >= self.capacity
+        return len(self.__data) >= TUBE_CAPACITY
 
     @property
     def is_unique(self) -> bool:
@@ -154,7 +149,7 @@ class Container:
 
         items_removed = list(self.__data[-count:])
         new_data = self.__data[:-count]
-        new_container = Container(new_data, self.capacity)
+        new_container = Container(new_data)
         return new_container, items_removed
 
     def pushed(self, items: Sequence[Item]) -> Container:
@@ -168,10 +163,10 @@ class Container:
             raise ValueError(f"Cannot add item {items[0]} to container {self}")
 
         new_data = self.__data + tuple(items)
-        if len(new_data) > self.capacity:
+        if len(new_data) > TUBE_CAPACITY:
             raise ValueError("Container capacity exceeded")
 
-        return Container(new_data, self.capacity)
+        return Container(new_data)
 
     def pour(self, target: Container) -> bool:
         """Move the head item from this container to target container.
@@ -188,7 +183,7 @@ class Container:
             return False
 
         # Calculate how many can be moved
-        num_to_move = min(self.num_matching_head, target.capacity - len(target))
+        num_to_move = min(self.num_matching_head, TUBE_CAPACITY - len(target))
         if num_to_move == 0:
             return False
 
@@ -246,8 +241,8 @@ class Container:
         """Get the string representation of this container."""
         content = [str(content) for content in self.__data]
         padding = ""
-        if len(content) < self.capacity:
-            padding = " " * (self.capacity - len(self.__data))
+        if len(content) < TUBE_CAPACITY:
+            padding = " " * (TUBE_CAPACITY - len(self.__data))
         return f"[{''.join(content)}{padding}]"
 
     def __repr__(self) -> str:

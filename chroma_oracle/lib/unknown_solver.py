@@ -10,6 +10,7 @@ import json
 
 from chroma_oracle.lib.collection import ContainerCollection
 from chroma_oracle.lib.colour import Colour
+from chroma_oracle.lib.container import TUBE_CAPACITY
 from chroma_oracle.lib.move import Move
 from chroma_oracle.lib.search import bfs, dfs
 
@@ -37,9 +38,9 @@ class UnknownPuzzleData:
         self.unknown_indices = []
 
         for r, row in enumerate(raw_grid):
-            if len(row) > 4:
+            if len(row) > TUBE_CAPACITY:
                 raise ValueError(
-                    f"Tube {r} has {len(row)} items, which exceeds the maximum capacity of 4"
+                    f"Tube {r} has {len(row)} items, which exceeds the maximum capacity of {TUBE_CAPACITY}"
                 )
             for c, item in enumerate(row):
                 if item == "UNKNOWN" or item == "?":

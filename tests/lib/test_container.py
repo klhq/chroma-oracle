@@ -3,7 +3,7 @@
 from unittest import TestCase
 
 from chroma_oracle.lib.colour import Colour
-from chroma_oracle.lib.container import Container
+from chroma_oracle.lib.container import TUBE_CAPACITY, Container
 from chroma_oracle.lib.item import Item
 
 
@@ -13,7 +13,7 @@ class TestContainer(TestCase):
     def test_empty_container(self):
         """Construct an empty container and check it's properties."""
         cont = Container([])
-        self.assertEqual(cont.capacity, 4, "Capacity should be 4")
+        self.assertEqual(cont.capacity, TUBE_CAPACITY, "Capacity should be 4")
         self.assertTrue(cont.is_empty, "An empty container is empty")
         self.assertFalse(cont.is_full, "An empty container is not full")
         self.assertTrue(cont.is_unique, "An empty container is unique")
@@ -23,40 +23,6 @@ class TestContainer(TestCase):
         self.assertTrue(cont.test(Item(Colour.BLUE)), "Any colour should test true")
         self.assertEqual(str(cont), "[    ]", "Empty collection")
         self.assertEqual(repr(cont), "[]", "Empty collection")
-
-    def test_container_capacity(self):
-        """Check changing the capacity works."""
-        cont = Container(["GREEN"], 2)
-        self.assertEqual(cont.capacity, 2, "Container capactiy is two")
-        self.assertFalse(cont.is_full, "Container is not full")
-        self.assertEqual(
-            str(cont),
-            "[\x1b[38;2;102;153;0m■\x1b[39m ]",
-            "Container only shows one block",
-        )
-        self.assertTrue(cont.add(Item(Colour.GREEN)), "Add should succeed")
-        self.assertTrue(cont.is_full, "Container is now full")
-        self.assertTrue(cont.is_unique, "Container is unique")
-        self.assertTrue(cont.is_solved, "Container is solved")
-        self.assertEqual(
-            str(cont),
-            "[\x1b[38;2;102;153;0m■\x1b[39m\x1b[38;2;102;153;0m■\x1b[39m]",
-            "Container shows two blocks",
-        )
-
-    def test_container_from_container_with_different_capacity(self):
-        """Construct a container from a container with a different capactiy."""
-        large_container = Container(["RED", "RED", "RED", "RED"])
-        small_container = Container(large_container, 2)
-        self.assertEqual(
-            len(small_container),
-            2,
-            "Container should be constrained to maximum capacity",
-        )
-        self.assertTrue(
-            small_container.is_full,
-            "Container should be full after construction",
-        )
 
     def test_container_from_item_sequence(self):
         """Construct a container with a sequence of items."""
@@ -76,7 +42,7 @@ class TestContainer(TestCase):
     def test_container_full_mixed(self):
         """Construct a full mixed container and check it's properties."""
         cont = Container(["RED", "RED", "GREEN", "GREEN"])
-        self.assertEqual(cont.capacity, 4, "Capacity should be 4")
+        self.assertEqual(cont.capacity, TUBE_CAPACITY, "Capacity should be 4")
         self.assertFalse(cont.is_empty)
         self.assertTrue(cont.is_full)
         self.assertFalse(cont.is_unique)
@@ -120,13 +86,11 @@ class TestContainer(TestCase):
 
     def test_container_add_full(self):
         """Test adding to a full container."""
-        cont = Container(["RED"], 1)
+        cont = Container(["RED", "RED", "RED", "RED"])
         self.assertTrue(cont.is_full, "The container is full")
 
         self.assertFalse(cont.add(Item(Colour.RED)), "Cannot add to a full container")
-        self.assertTupleEqual(
-            cont.data, (Colour.RED,), "The collection should be unchanged"
-        )
+        self.assertEqual(len(cont), TUBE_CAPACITY, "The container should be unchanged")
 
     def test_container_pour_single_to_empty(self):
         """Check pouring a single item to an empty container."""
@@ -174,10 +138,10 @@ class TestContainer(TestCase):
     def test_container_pour_single_to_full(self):
         """Check pouring into a full container."""
         cont = Container(["RED"])
-        target = Container(["RED"], 1)
+        target = Container(["RED", "RED", "RED", "RED"])
         self.assertFalse(cont.pour(target), "Pour should fail")
         self.assertEqual(len(cont), 1, "Container length should not change")
-        self.assertEqual(len(target), 1, "Target length should not change")
+        self.assertEqual(len(target), TUBE_CAPACITY, "Target length should not change")
 
     def test_container_pour_multiple_matching_to_empty(self):
         """Check pouring multiple matching items to an empty container."""
@@ -292,17 +256,21 @@ class TestContainer(TestCase):
             "Two consecutive colours in src after pour",
         )
 
-    def test_container_from_container_with_lower_capacity(self):
-        """Test creating a new container from a smaller one.
-
-        This test is currently expected to fail as the capacity is not
-        maintained when a container is constructed from another.
-        """
-        original = Container(["RED"], 1)
+    def test_container_from_container(self):
+        """Test creating a new container from another container."""
+        original = Container(["RED", "GREEN"])
         new = Container(original)
-        self.assertTrue(new.is_full)
-        self.assertTrue(new.is_solved)
         self.assertEqual(original, new)
+        self.assertEqual(new.capacity, TUBE_CAPACITY)
+
+    def test_container_pour_never_exceeds_tube_capacity(self):
+        """Pouring into a container never exceeds TUBE_CAPACITY."""
+        cont = Container(["RED", "RED", "RED", "RED"])
+        target = Container(["RED", "RED"])
+        self.assertTrue(cont.pour(target))
+        self.assertEqual(len(target), TUBE_CAPACITY)
+        self.assertTrue(target.is_full)
+        self.assertEqual(len(cont), 2)
 
     def test_container_equals_container(self):
         """Test creating a new container from a smaller one.

@@ -5,6 +5,7 @@ from typing import TextIO
 
 # from chroma_oracle.lib.container import Container
 from chroma_oracle.lib.collection import ContainerCollection
+from chroma_oracle.lib.container import TUBE_CAPACITY
 
 
 def load(file: TextIO, *, reject_invalid: bool = False) -> ContainerCollection:
@@ -12,9 +13,9 @@ def load(file: TextIO, *, reject_invalid: bool = False) -> ContainerCollection:
     content: list[list[str]] = json.load(file)
 
     for i, tube in enumerate(content):
-        if len(tube) > 4:
+        if len(tube) > TUBE_CAPACITY:
             raise ValueError(
-                f"Tube {i} has {len(tube)} items, which exceeds the maximum capacity of 4"
+                f"Tube {i} has {len(tube)} items, which exceeds the maximum capacity of {TUBE_CAPACITY}"
             )
 
     if reject_invalid:

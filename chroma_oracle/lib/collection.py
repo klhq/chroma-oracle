@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import cast
 
-from chroma_oracle.lib.container import Container
+from chroma_oracle.lib.container import TUBE_CAPACITY, Container
 from chroma_oracle.lib.item import Item
 from chroma_oracle.lib.move import Move
 
@@ -32,9 +32,9 @@ class ContainerCollection:
             else:
                 raw_items = cast(list[list[str]], data)
                 for i, item in enumerate(raw_items):
-                    if len(item) > 4:
+                    if len(item) > TUBE_CAPACITY:
                         raise ValueError(
-                            f"Tube {i} has {len(item)} items, which exceeds the maximum capacity of 4"
+                            f"Tube {i} has {len(item)} items, which exceeds the maximum capacity of {TUBE_CAPACITY}"
                         )
                 self.data = tuple(Container(item) for item in raw_items)
         elif isinstance(data, tuple):
@@ -116,7 +116,7 @@ class ContainerCollection:
         # This tests the top most colour matches.
         # If it does, also check there's enough capacity for the pour.
         # Don't try to put more into a container than it could take
-        dest_space = dest.capacity - len(dest)
+        dest_space = TUBE_CAPACITY - len(dest)
         return (
             self.data[move.dest].test(self.data[move.src].head)
             and src.num_matching_head <= dest_space
