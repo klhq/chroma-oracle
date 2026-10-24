@@ -77,6 +77,12 @@ def interactive_strategy_session(puzzle_path: str, algorithm: str = "BFS"):
     with open(puzzle_path, encoding="utf-8") as f:
         current_grid = json.load(f)
 
+    for idx, tube in enumerate(current_grid):
+        if len(tube) > 4:
+            raise ValueError(
+                f"Tube {idx} has {len(tube)} items, which exceeds the maximum capacity of 4"
+            )
+
     iteration = 1
     total_moves_made = 0
 

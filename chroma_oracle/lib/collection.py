@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 from chroma_oracle.lib.container import Container
 from chroma_oracle.lib.item import Item
 from chroma_oracle.lib.move import Move
@@ -28,7 +30,13 @@ class ContainerCollection:
             if data and isinstance(data[0], Container):
                 self.data = tuple(data)  # type: ignore
             else:
-                self.data = tuple(Container(item) for item in data)
+                raw_items = cast(list[list[str]], data)
+                for i, item in enumerate(raw_items):
+                    if len(item) > 4:
+                        raise ValueError(
+                            f"Tube {i} has {len(item)} items, which exceeds the maximum capacity of 4"
+                        )
+                self.data = tuple(Container(item) for item in raw_items)
         elif isinstance(data, tuple):
             self.data = data
         elif isinstance(data, ContainerCollection):

@@ -37,6 +37,10 @@ class UnknownPuzzleData:
         self.unknown_indices = []
 
         for r, row in enumerate(raw_grid):
+            if len(row) > 4:
+                raise ValueError(
+                    f"Tube {r} has {len(row)} items, which exceeds the maximum capacity of 4"
+                )
             for c, item in enumerate(row):
                 if item == "UNKNOWN" or item == "?":
                     self.unknown_indices.append((r, c))

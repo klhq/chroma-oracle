@@ -163,3 +163,62 @@ class TestCli(TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("720 candidates", result.output)
             self.assertIn("cap: 200", result.output)
+
+    def test_cli_solve_oversized_tube(self):
+        """CLI solve command rejects tubes longer than 4 with readable error."""
+        import json
+        import tempfile
+
+        runner = CliRunner()
+        oversized_puzzle = [
+            ["RED", "RED", "BLUE", "BLUE", "GREEN"],
+            ["GREEN", "GREEN", "GREEN"],
+            [],
+        ]
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as f:
+            json.dump(oversized_puzzle, f)
+            f.flush()
+            result = runner.invoke(cli, ["solve", f.name])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Error: Invalid PUZZLE:", result.output)
+            self.assertIn("Tube 0", result.output)
+            self.assertIn("5 items", result.output)
+            self.assertNotIn("Traceback", result.output)
+
+    def test_cli_strategy_oversized_tube(self):
+        """CLI strategy command rejects tubes longer than 4 with readable error."""
+        import json
+        import tempfile
+
+        runner = CliRunner()
+        oversized_puzzle = [
+            ["RED", "RED", "BLUE", "BLUE", "GREEN"],
+            ["GREEN", "GREEN", "GREEN"],
+            [],
+        ]
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as f:
+            json.dump(oversized_puzzle, f)
+            f.flush()
+            result = runner.invoke(cli, ["strategy", f.name])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Error: Invalid PUZZLE:", result.output)
+            self.assertIn("Tube 0", result.output)
+            self.assertIn("5 items", result.output)
+            self.assertNotIn("Traceback", result.output)
+
+    def test_cli_solve_tube_of_exactly_four_accepted(self):
+        """CLI solve accepts tubes of exactly 4 items."""
+        import json
+        import tempfile
+
+        runner = CliRunner()
+        valid_puzzle = [
+            ["RED", "RED", "RED", "RED"],
+            [],
+        ]
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as f:
+            json.dump(valid_puzzle, f)
+            f.flush()
+            result = runner.invoke(cli, ["solve", f.name])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("solved in 0 moves", result.output)

@@ -1,5 +1,6 @@
 """Tests for the json2collection module."""
 
+import io
 import pathlib
 from unittest import TestCase
 
@@ -41,3 +42,23 @@ class TestJson2Collection(TestCase):
         with self.assertRaises(ValueError):  # noqa: SIM117
             with pathlib.Path("./levels/bad.json").open(encoding="utf-8") as reader:
                 _ = json2collection.load(reader, reject_invalid=True)
+
+    def test_tube_exactly_four_accepted(self):
+        """Test that tubes with exactly four items are accepted."""
+        content = '[["RED", "GREEN", "BLUE", "YELLOW"], []]'
+        reader = io.StringIO(content)
+        collection = json2collection.load(reader)
+        self.assertEqual(len(collection), 2)
+        self.assertEqual(len(collection[0]), 4)
+        self.assertEqual(len(collection[1]), 0)
+
+    def test_tube_oversized_five_rejected(self):
+        """Test that a tube with 5 items is rejected with tube index and length."""
+        content = '[["RED"], ["RED", "BLUE", "GREEN", "YELLOW", "ORANGE"]]'
+        reader = io.StringIO(content)
+        with self.assertRaises(ValueError) as cm:
+            json2collection.load(reader)
+
+        msg = str(cm.exception)
+        self.assertIn("Tube 1", msg)
+        self.assertIn("5", msg)
