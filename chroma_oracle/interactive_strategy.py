@@ -15,6 +15,7 @@ import json
 import sys
 
 from chroma_oracle.lib.collection import ContainerCollection
+from chroma_oracle.lib.container import TUBE_CAPACITY
 from chroma_oracle.lib.move import Move
 from chroma_oracle.lib.strategy import find_all_solutions, find_common_prefix
 from chroma_oracle.lib.unknown_solver import TooManyCandidatesError
@@ -78,9 +79,9 @@ def interactive_strategy_session(puzzle_path: str, algorithm: str = "BFS"):
         current_grid = json.load(f)
 
     for idx, tube in enumerate(current_grid):
-        if len(tube) > 4:
+        if len(tube) > TUBE_CAPACITY:
             raise ValueError(
-                f"Tube {idx} has {len(tube)} items, which exceeds the maximum capacity of 4"
+                f"Tube {idx} has {len(tube)} items, which exceeds the maximum capacity of {TUBE_CAPACITY}"
             )
 
     iteration = 1

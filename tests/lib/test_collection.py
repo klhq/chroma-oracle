@@ -163,6 +163,28 @@ class TestContainerCollection(TestCase):
             "Moving from a full container to an empty container is not valid",
         )
 
+    def test_is_valid_pour_whole_matching_head_fits(self):
+        """Move is only valid if the whole matching head run fits in the destination."""
+        # src has 2 matching GREEN at head, dest has 2 slots left (2 items) -> fits
+        coll_fits = ContainerCollection(
+            [
+                ["RED", "BLUE", "GREEN", "GREEN"],
+                ["YELLOW", "GREEN"],
+                [],
+            ]
+        )
+        self.assertTrue(coll_fits.is_valid(Move(0, 1)))
+
+        # src has 3 matching GREEN at head, dest has only 2 slots left -> does not fit
+        coll_does_not_fit = ContainerCollection(
+            [
+                ["RED", "GREEN", "GREEN", "GREEN"],
+                ["YELLOW", "GREEN"],
+                [],
+            ]
+        )
+        self.assertFalse(coll_does_not_fit.is_valid(Move(0, 1)))
+
     def test_after_invalid_move(self):
         """Test that an expcetion is raised trying to use an invalid move."""
         coll = ContainerCollection(
