@@ -107,23 +107,39 @@ def dfs(root: ContainerCollection) -> Option | None:
         return Option(root, ())
 
     visited: set[ContainerCollection] = set()
-    # Call the recursive function
-    return _dfs(visited, Option(root, ()))
+    # One shared path, pushed and popped around each recursive call, so no
+    # step pays for copying the whole moves tuple.
+    path: list[Move] = []
+    return _dfs(visited, path, root, None)
 
 
-def _dfs(visited: set[ContainerCollection], option: Option) -> Option | None:
-    col = option.collection
+def _dfs(
+    visited: set[ContainerCollection],
+    path: list[Move],
+    col: ContainerCollection,
+    prev_move: Move | None,
+) -> Option | None:
     if col in visited:
         return None
     visited.add(col)
     if col.is_solved:
-        return option
+        return Option(col, tuple(path))
+
+    # `prev_move` is only set when it poured into an empty container, which
+    # makes its reverse an exact undo back to the parent, already in
+    # `visited`. Skip it before paying for after() + the visited check. A pour
+    # into a non-empty container can be reversed into a different state, so
+    # those moves are not pruned.
+    undo = prev_move.reverse() if prev_move is not None else None
 
     for move in col.get_moves():
-        next_moves = list(option.moves)
-        next_moves.append(move)
-        next_option = Option(col.after(move), tuple(next_moves))
-        result = _dfs(visited, next_option)
+        if undo is not None and move == undo:
+            continue
+        path.append(move)
+        result = _dfs(
+            visited, path, col.after(move), move if col[move.dest].is_empty else None
+        )
+        path.pop()
         if result is not None:
             return result
 
