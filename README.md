@@ -1,6 +1,6 @@
 # ChromaOracle 🔮
 
-[![Version](https://img.shields.io/badge/version-2.1.0-orange)](https://github.com/klhq/chroma-oracle)
+[![Version](https://img.shields.io/badge/version-2.2.0-orange)](https://github.com/klhq/chroma-oracle)
 [![Docker Pulls](https://img.shields.io/docker/pulls/klhq/chroma-oracle)](https://hub.docker.com/repository/docker/klhq/chroma-oracle)
 [![Tests](https://github.com/klhq/chroma-oracle/actions/workflows/tests.yml/badge.svg)](https://github.com/klhq/chroma-oracle/actions/workflows/tests.yml)
 [![Docker Publish](https://github.com/klhq/chroma-oracle/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/klhq/chroma-oracle/actions/workflows/docker-publish.yml)

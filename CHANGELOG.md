@@ -4,6 +4,17 @@ All notable changes to ChromaOracle CLI are documented here.
 
 For the web version changelog, see [chromaoracle.com](https://chromaoracle.com).
 
+## [2.2.0] - 2026-10-24
+
+### Added
+- **Mystery candidate cap** (`MAX_MYSTERY_CANDIDATES = 200`) — rejects combinatorial explosions early with `TooManyCandidatesError` and user-friendly CLI messages.
+- **Multinomial permutation counter** (`count_unique_permutations`) — computes unique permutations in $O(n)$ time.
+
+### Changed
+- **Mystery permutation generation** — recursive branch-level deduplication (`unique_permutations`) replaces `itertools.permutations` to prevent $O(N!)$ memory spikes.
+- **Candidate grid copying** — uses fast row slicing instead of `copy.deepcopy`.
+- **Collection hash & equality optimization** — caches `ContainerCollection._hash` and adds fast-path inequality check in `__eq__`.
+
 ## [2.1.0] - 2026-03-28
 
 ### Changed
