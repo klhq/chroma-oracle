@@ -4,6 +4,15 @@ All notable changes to ChromaOracle CLI are documented here.
 
 For the web version changelog, see [chromaoracle.com](https://chromaoracle.com).
 
+## [2.2.1] - 2026-10-25
+
+### Fixed
+- **Input validation** — reject puzzle boards containing tubes longer than 4 items with a clear `ValueError` instead of silently truncating them to capacity.
+
+### Changed
+- **Hardcode tube capacity** — define `TUBE_CAPACITY = 4` across containers, collection rules, and puzzle loaders, removing dynamic capacity parameters and redundant copies.
+- **DFS undo move pruning** — skip exact-undo moves in DFS when pouring into an empty container, and share a single move path across recursive calls.
+
 ## [2.2.0] - 2026-10-24
 
 ### Added
